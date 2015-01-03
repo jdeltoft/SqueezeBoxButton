@@ -16,5 +16,5 @@
 
 4. Install wiringPi from http://wiringpi.com/download-and-install/
 
-5. Add benchButton and benchButtonCmds to....
+5. Add squeezeBoxButton and squeezeBoxButtonCmds to....
 
