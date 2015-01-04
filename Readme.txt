@@ -16,5 +16,11 @@
 
 4. Install wiringPi from http://wiringpi.com/download-and-install/
 
-5. Add squeezeBoxButton and squeezeBoxButtonCmds to....
+5. Update $SBID (squeezebox mac address) in SqueezeBoxButtonCmds perl script, as well as $HOST to the IP of the
+   Squeezebox server on your LAN.
+
+6. For now I haven't made them daemons so just run them in the background each powerup of the Raspberry Pi
+
+      shell_prompt> SqueezeBoxButton &
+      shell_prompt> SqueezeBoxButtonCmds &
 
