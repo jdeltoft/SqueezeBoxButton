@@ -1,1 +1,1 @@
-gcc SqueezeBoxButton.c -o SqueezeBoxButton -lwiringPi -lwiringPiDev
+gcc SqueezeBoxButton.c -o SqueezeBoxButton.exe -lwiringPi -lwiringPiDev
