@@ -24,3 +24,15 @@
       shell_prompt> SqueezeBoxButton &
       shell_prompt> SqueezeBoxButtonCmds &
 
+
+
+
+KeyPress Sequences:
+==================
+Single tap => Play/Pause Toggle
+Double tap => Next Song
+Triple tap => Prev Song
+Long Press => Vol Down (repeats while held)
+Double tap with long final press => Vol Up (repeats while held)
+Triple tap with long final press => Cycle to next Favorite (skips mysqueezebox.com)
+
