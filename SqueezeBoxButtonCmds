@@ -1,0 +1,138 @@
+#!/usr/bin/perl
+
+###### 
+## Used this as my reference material
+## http://crestron-squeeze.googlecode.com/files/cli-api_7.6.htm
+######
+
+### Globals
+$HOST = '192.168.1.100';
+$SBID = '11:22:33:44:55:66';
+$playingState = 0;
+$currFav = 1;
+
+use Net::Telnet ();
+$t = new Net::Telnet (Timeout => 3);
+$t->open(Host => $HOST, Port => 9090);
+
+## If you have a SqueezeServer password set it here
+#$t->login($username, $passwd);
+
+while (1) {
+
+   ##### Normal Presses #####
+   if (-e "./singlePress") {
+      ### Play/Pause Toggle
+      ## Find out if playing or not
+      $t->print("$SBID status");
+      $ret = $t->getline();
+      if ($ret =~ /mode%3Apause/i) {
+         $playingState=0;
+      } else {
+         $playingState=1;
+      }
+
+      if ($playingState == 1) {
+         $playingState = 0;
+         $t->print("$SBID pause");
+      } else {
+         $playingState = 1;
+         $t->print("$SBID play");
+      }
+      $junk = $t->getline();
+      unlink("./singlePress");
+   }
+   if (-e "./doublePress") {
+      ### Next Song
+      $t->print("$SBID status");
+      $ret = $t->getline();
+
+      if ($ret =~ /can_seek/i) {
+         $t->print("$SBID pandora skipTrack");
+      } else {
+         $t->print("$SBID playlist index +1");
+      }
+      $junk = $t->getline();
+      unlink("./doublePress");
+   }
+   if (-e "./triplePress") {
+      ### Previous Song
+      $t->print("$SBID status\n");
+      $ret = $t->getline();
+
+      if ($ret =~ /can_seek/i) {
+         # there is no way to go to previous track in Pandora
+      } else {
+         $t->print("$SBID playlist index -1");
+      }
+      $junk = $t->getline();
+      unlink("./triplePress");
+   }
+
+
+   ##### Long Presses #####
+   if (-e "./singlePressLong") {
+      ## Get current volume
+      $t->print("$SBID mixer volume ?");
+      $ret = $t->getline();
+
+      if ($ret =~ /([0-9]+)$/) {
+         $newVol = $1 - 5;
+         if ($newVol >= 0 && $newVol <= 100) {
+            $t->print("$SBID mixer volume $newVol");
+            $junk = $t->getline();
+         }
+      }
+      select(undef, undef, undef, 0.55);
+      unlink("./singlePressLong");
+   }
+   if (-e "./doublePressLong") {
+      ## Get current volume
+      $t->print("$SBID mixer volume ?");
+      $ret = $t->getline();
+
+      if ($ret =~ /([0-9]+)$/) {
+         $newVol = $1 + 5;
+         if ($newVol >= 0 && $newVol <= 100) {
+            $t->print("$SBID mixer volume $newVol");
+            $junk = $t->getline();
+         }
+      }
+      select(undef, undef, undef, 0.55);
+      unlink("./doublePressLong");
+   }
+   if (-e "./triplePressLong") {
+      ## Get count of favorites (guess 50 for now since it won't hurt)
+      $t->print("$SBID favorites items 0 50");
+      $ret = $t->getline();
+
+      if ($ret =~ /count%3A([0-9]+)$/i) {
+         $favCount = $1;
+         if ($favCount > 50) {
+            $t->print("$SBID favorites items 0 $favCount");
+            $ret = $t->getline();
+         }
+         @favs = split (/id%3A/, $ret);
+         $fav = $favs[$currFav++];
+         $fav =~ /^(\S+)\s+name%3A(\S+)\s/i;
+         $favID = $1;
+         $favName = $2;
+         if ($favName =~ /(WGN|mysqueezebox)/i ){
+            $fav = $favs[$currFav++];
+            $fav =~ /^(\S+)\s+name%3A(\S+)\s/i;
+            $favID = $1;
+            $favName = $2;
+         }
+         $t->print("$SBID favorites playlist play item_id:$favID");
+         $junk = $t->getline();
+         if ($currFav > $favCount) {
+            $currFav = 1;
+         }
+      }
+      unlink("./triplePressLong");
+   }
+   select(undef, undef, undef, 0.01);
+}
+
+##getc();
+
